@@ -53,9 +53,12 @@ def view_points(points: np.ndarray, view: np.ndarray, normalize: bool) -> np.nda
     return points
 
 def _second_det_to_nusc_box(detection):
-    box3d = detection["box3d_lidar"]
+#     box3d = detection["box3d_lidar"]
+#     scores = detection["scores"]
+#     labels = detection["label_preds"]
+    box3d = detection["boxes"]
     scores = detection["scores"]
-    labels = detection["label_preds"]
+    labels = detection["classes"]
     box3d[:, -1] = -box3d[:, -1] - np.pi / 2
     box_list = []
     for i in range(box3d.shape[0]):
