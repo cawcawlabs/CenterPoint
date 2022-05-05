@@ -184,5 +184,26 @@ if __name__ == '__main__':
     #    with open(os.path.join(args.output_dir, 'visualization.pkl'), 'wb') as f:
     #        pickle.dump(visual_dicts, f)
 
-    with open(os.path.join(args.output_dir, 'detections.pkl'), 'wb') as f:
-        pickle.dump(pred_dicts, f)
+    #with open(os.path.join(args.output_dir, 'detections.pkl'), 'wb') as f:
+    #    pickle.dump(pred_dicts, f)
+    image_folder = 'demo'
+    video_name = 'video.avi'
+
+    images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
+    images.sort(key=lambda img_name: int(img_name.split('.')[0][4:]))
+    frame = cv2.imread(os.path.join(image_folder, images[0]))
+    height, width, layers = frame.shape
+
+    video = cv2.VideoWriter(video_name, 0, 1, (width,height))
+    cv2_images = [] 
+
+    for image in images:
+        cv2_images.append(cv2.imread(os.path.join(image_folder, image)))
+
+    for img in cv2_images:
+        video.write(img)
+
+    cv2.destroyAllWindows()
+    video.release()
+
+    print("Successfully save video in the main folder")
