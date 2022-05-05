@@ -310,7 +310,36 @@ def visual(points, gt_anno, det, i, eval_range=35, conf_th=0.5):
 
     plt.savefig("demo/file%02d.png" % i)
     plt.close()
+    
+def visual_est(points, det, i, eval_range=35, conf_th=0.5):
+    _, ax = plt.subplots(1, 1, figsize=(9, 9), dpi=200)
+    points = remove_close(points, radius=3)
+    points = view_points(points[:3, :], np.eye(4), normalize=False)
 
+    dists = np.sqrt(np.sum(points[:2, :] ** 2, axis=0))
+    colors = np.minimum(1, dists / eval_range)
+    ax.scatter(points[0, :], points[1, :], c=colors, s=0.2)
+
+    #boxes_gt = _second_det_to_nusc_box(gt_anno)
+    boxes_est = _second_det_to_nusc_box(det)
+
+#     # Show GT boxes.
+#     for box in boxes_gt:
+#         box.render(ax, view=np.eye(4), colors=('r', 'r', 'r'), linewidth=2)
+
+    # Show EST boxes.
+    for box in boxes_est:
+        if box.score >= conf_th:
+            box.render(ax, view=np.eye(4), colors=('b', 'b', 'b'), linewidth=1)
+
+
+    axes_limit = eval_range + 3  # Slightly bigger to include boxes that extend beyond the range.
+    ax.set_xlim(-axes_limit, axes_limit)
+    ax.set_ylim(-axes_limit, axes_limit)
+    plt.axis('off')
+
+    plt.savefig("demo/file%02d.png" % i)
+    plt.close()
 
 def remove_close(points, radius: float) -> None:
     """
