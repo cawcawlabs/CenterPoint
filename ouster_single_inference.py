@@ -12,7 +12,8 @@ import open3d as o3d
 import argparse
 import torch
 import time 
-import os 
+import os
+import cv2
 
 #from tools.demo_utils import visual
 from tools.demo_utils import visual_est
