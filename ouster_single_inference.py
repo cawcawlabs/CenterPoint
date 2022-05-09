@@ -12,7 +12,7 @@ import open3d as o3d
 import argparse
 import torch
 import time 
-import os
+import os 
 import cv2
 
 #from tools.demo_utils import visual
@@ -107,24 +107,13 @@ def process_example(points, fp16=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CenterPoint")
-    #parser.add_argument("config", help="path to config file")
-    #parser.add_argument(
-    #    "--checkpoint", help="the path to checkpoint which the model read from", default=None, type=str
-    #)
-    #parser.add_argument('--input_data_dir', type=str, required=True)
-    #parser.add_argument('--output_dir', type=str, required=True)
+    
     parser.add_argument('--fp16', action='store_true')
     parser.add_argument('--threshold', default=0.1)
-    #parser.add_argument('--visual', action='store_true')
-    #parser.add_argument("--online", action='store_true')
+   
     parser.add_argument('--num_frame', default=-1, type=int)
     args = parser.parse_args()
 
-    #print("Please prepare your point cloud in waymo format and save it as a pickle dict with points key into the {}".format(args.input_data_dir))
-    #print("One point cloud should be saved in one pickle file.")
-    #print("Download and save the pretrained model at {}".format(args.checkpoint))
-    
-    
     #DSOHN
     args.config = 'configs/nusc/pp/nusc_centerpoint_pp_02voxel_two_pfn_10sweep_circular_nms.py'#'configs/centerpoint/nusc_centerpoint_pp_02voxel_circle_nms_demo.py' #config
     args.checkpoint = 'work_dirs/centerpoint_pillar_512_demo/latest.pth' #checkpoint
@@ -149,8 +138,7 @@ if __name__ == '__main__':
             counter += 1 
 
         pc_name = os.path.join(args.input_data_dir, frame_name)
-        #points = pickle.load(open(pc_name, 'rb'))['points']
-        #points = read_single_waymo(get_obj(pc_name))
+
         print(pc_name)
         bin_pcd = np.fromfile(pc_name, dtype=np.float32)
 
@@ -158,35 +146,18 @@ if __name__ == '__main__':
         points = bin_pcd.reshape((-1, 5))#[:, 0:3] #xyz
         xyz_points = points[:,0:3]
         detections = process_example(points, args.fp16)
-        print(detections)
-        #if args.visual and args.online:
-        #    pcd = o3d.geometry.PointCloud()
-        #    pcd = o3d.geometry.PointCloud()
-        #    pcd.points = o3d.utility.Vector3dVector(points[:, :3])
-        #    visual = [pcd]
-        #    num_dets = detections['scores'].shape[0]
-        #    visual += plot_boxes(detections, args.threshold)
-        #
-        #    o3d.visualization.draw_geometries(visual)
-        #elif args.visual:
-        #    visual_dicts.append({'points': points, 'detections': detections})
+        #print(detections)
+        
         points_list.append(xyz_points.T)
         pred_dicts.update({frame_name: detections})
         
         print('Done model inference. Please wait a minute, the matplotlib is a little slow...')
         visual_est(xyz_points.T, detections, counter)
-    #for i in range(len(points_list)):
-    #    visual(points_list[i], gt_annos[i], detections[i], i)
-    #    print("starting Image {}".format(i))
-    #    #visual(points_list[i], detections[i], i)
-    #    print("Rendered Image {}".format(i))
+  
+    with open(os.path.join(args.output_dir, 'detections.pkl'), 'wb') as f:
+        pickle.dump(pred_dicts, f)
 
-    #if args.visual:
-    #    with open(os.path.join(args.output_dir, 'visualization.pkl'), 'wb') as f:
-    #        pickle.dump(visual_dicts, f)
 
-    #with open(os.path.join(args.output_dir, 'detections.pkl'), 'wb') as f:
-    #    pickle.dump(pred_dicts, f)
     image_folder = 'demo'
     video_name = 'video.avi'
 
