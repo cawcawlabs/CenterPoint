@@ -341,7 +341,7 @@ def visual_est(points, det, i, eval_range=35, conf_th=0.5):
     ax.set_ylim(-axes_limit, axes_limit)
     plt.axis('off')
 
-    plt.savefig("demo/file%02d.png" % i)
+    plt.savefig("demo/file%05d.png" % i)
     plt.close()
 
 def remove_close(points, radius: float) -> None:
