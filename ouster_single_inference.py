@@ -146,7 +146,7 @@ if __name__ == '__main__':
         points = bin_pcd.reshape((-1, 5))#[:, 0:3] #xyz
         xyz_points = points[:,0:3]
         detections = process_example(points, args.fp16)
-        #print(detections)
+        print(detections)
         
         points_list.append(xyz_points.T)
         pred_dicts.update({frame_name: detections})
