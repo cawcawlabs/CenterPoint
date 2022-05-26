@@ -43,7 +43,7 @@ class NuScenesDataset(PointCloudDataset):
         load_interval=1,
         **kwargs,
     ):
-        self.load_interval = load_interval 
+        self.load_interval = load_interval
         super(NuScenesDataset, self).__init__(
             root_path, info_path, pipeline, test_mode=test_mode, class_names=class_names
         )
@@ -63,7 +63,7 @@ class NuScenesDataset(PointCloudDataset):
 
         self.virtual = kwargs.get('virtual', False)
         if self.virtual:
-            self._num_point_features = 16 
+            self._num_point_features = 16
 
         self.version = version
         self.eval_version = "detection_cvpr_2019"
@@ -218,7 +218,6 @@ class NuScenesDataset(PointCloudDataset):
             "results": {},
             "meta": None,
         }
-
         nusc = NuScenes(version=version, dataroot=str(self._root_path), verbose=True)
 
         mapped_class_names = []
@@ -292,8 +291,8 @@ class NuScenesDataset(PointCloudDataset):
                 nusc,
                 self.eval_version,
                 res_path,
-                eval_set_map[self.version],
-                output_dir,
+                eval_set="use_predictions",
+                output_dir=output_dir,
             )
 
             with open(Path(output_dir) / "metrics_summary.json", "r") as f:

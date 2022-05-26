@@ -29,7 +29,7 @@ def initialize_model(args):
     cfg = Config.fromfile(args.config)
     model = build_detector(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
     if args.checkpoint is not None:
-        load_checkpoint(model, args.checkpoint, map_location="cpu")
+        load_checkpoint(model, args.checkpoint, map_location="cuda")
     # print(model)
     if args.fp16:
         print("cast model to fp16")
@@ -117,9 +117,12 @@ if __name__ == '__main__':
     #DSOHN
     args.config = 'configs/nusc/pp/nusc_centerpoint_pp_02voxel_two_pfn_10sweep_circular_nms.py'#'configs/centerpoint/nusc_centerpoint_pp_02voxel_circle_nms_demo.py' #config
     args.checkpoint = 'work_dirs/centerpoint_pillar_512_demo/latest.pth' #checkpoint
-    args.input_data_dir = '/content/CenterPoint/work_dirs/ouster_data' #.bin file location
-    args.output_dir = '/content/'
-    
+    args.input_data_dir = 'work_dirs/ouster_data/samples/' #.bin file location
+    args.output_dir = 'demo/ouster_data/output/'
+    image_folder = 'demo/ouster_data/'
+    video_name = 'demo/ouster_data/video.avi'
+    os.makedirs(args.output_dir, exist_ok=True)
+
     # Run any user-specified initialization code for their submission.
     model = initialize_model(args)
 
@@ -129,9 +132,10 @@ if __name__ == '__main__':
     counter = 0 
     
     points_list = []
-    gt_annos = [None,None,None,None] 
-    
+    gt_annos = [None,None,None,None]
+
     for frame_name in tqdm(sorted(os.listdir(args.input_data_dir))):
+        if '.pcd.bin' not in frame_name: continue
         if counter == args.num_frame:
             break
         else:
@@ -146,20 +150,16 @@ if __name__ == '__main__':
         points = bin_pcd.reshape((-1, 5))#[:, 0:3] #xyz
         xyz_points = points[:,0:3]
         detections = process_example(points, args.fp16)
-        print(detections)
         
         points_list.append(xyz_points.T)
         pred_dicts.update({frame_name: detections})
         
         print('Done model inference. Please wait a minute, the matplotlib is a little slow...')
-        visual_est(xyz_points.T, detections, counter)
+        visual_est(xyz_points.T, detections, counter, base_dir=image_folder)
   
     with open(os.path.join(args.output_dir, 'detections.pkl'), 'wb') as f:
         pickle.dump(pred_dicts, f)
 
-
-    image_folder = 'demo'
-    video_name = 'video.avi'
 
     images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
     images.sort(key=lambda img_name: int(img_name.split('.')[0][4:]))
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     height, width, layers = frame.shape
 
     video = cv2.VideoWriter(video_name, 0, 1, (width,height))
-    cv2_images = [] 
+    cv2_images = []
 
     for image in images:
         cv2_images.append(cv2.imread(os.path.join(image_folder, image)))

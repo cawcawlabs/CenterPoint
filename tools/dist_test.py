@@ -26,8 +26,8 @@ from det3d.torchie.apis import (
 from det3d.torchie.trainer import get_dist_info, load_checkpoint
 from det3d.torchie.trainer.utils import all_gather, synchronize
 from torch.nn.parallel import DistributedDataParallel
-import pickle 
-import time 
+import pickle
+import time
 
 def save_pred(pred, root):
     with open(os.path.join(root, "prediction.pkl"), "wb") as f:
@@ -37,7 +37,7 @@ def save_pred(pred, root):
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a detector")
     parser.add_argument("config", help="train config file path")
-    parser.add_argument("--work_dir", required=True, help="the dir to save logs and models")
+    parser.add_argument("--work_dir", required=False, help="the dir to save logs and models")
     parser.add_argument(
         "--checkpoint", help="the dir to checkpoint which the model read from"
     )
@@ -83,6 +83,9 @@ def main():
     cfg.local_rank = args.local_rank
 
     # update configs according to CLI args
+    if args.work_dir is None:
+        args.work_dir = cfg.work_dir 
+
     if args.work_dir is not None:
         cfg.work_dir = args.work_dir
 
@@ -102,7 +105,6 @@ def main():
     logger = get_root_logger(cfg.log_level)
     logger.info("Distributed testing: {}".format(distributed))
     logger.info(f"torch.backends.cudnn.benchmark: {torch.backends.cudnn.benchmark}")
-
     model = build_detector(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
 
     if args.testset:
@@ -114,8 +116,8 @@ def main():
 
     data_loader = build_dataloader(
         dataset,
-        batch_size=cfg.data.samples_per_gpu if not args.speed_test else 1,
-        workers_per_gpu=cfg.data.workers_per_gpu,
+        batch_size=1,
+        workers_per_gpu=1,
         dist=distributed,
         shuffle=False,
     )
@@ -197,7 +199,6 @@ def main():
         os.makedirs(args.work_dir)
 
     save_pred(predictions, args.work_dir)
-
     result_dict, _ = dataset.evaluation(copy.deepcopy(predictions), output_dir=args.work_dir, testset=args.testset)
 
     if result_dict is not None:

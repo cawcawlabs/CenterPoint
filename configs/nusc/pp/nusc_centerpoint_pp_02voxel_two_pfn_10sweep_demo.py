@@ -3,6 +3,16 @@ import logging
 
 from det3d.utils.config_tool import get_downsample_factor
 
+# dataset settings
+dataset_type = "NuScenesDataset"
+nsweeps = 10
+data_root = "data/detroit_mini/synthetic_nuscenes/"
+train_anno = "data/detroit_mini/synthetic_nuscenes/infos_train_10sweeps_withvelo_filter_True.pkl"
+val_anno = "data/detroit_mini/synthetic_nuscenes/infos_val_10sweeps_withvelo_filter_True.pkl"
+test_anno = None
+work_dir = './work_dirs/{}/detroit_mini/synthetic_nuscenes/'.format(__file__[__file__.rfind('/') + 1:-3])
+
+
 tasks = [
     dict(num_class=1, class_names=["car"]),
     dict(num_class=2, class_names=["truck", "construction_vehicle"]),
@@ -80,15 +90,10 @@ test_cfg = dict(
     voxel_size=[0.2, 0.2]
 )
 
-# dataset settings
-dataset_type = "NuScenesDataset"
-nsweeps = 10
-data_root = "data/nuScenes"
-
 db_sampler = dict(
     type="GT-AUG",
     enable=False,
-    db_info_path="data/nuScenes/dbinfos_train_10sweeps_withvelo.pkl",
+    db_info_path="data/detroit_mini/dbinfos_train_10sweeps_withvelo.pkl",
     sample_groups=[
         dict(car=2),
         dict(truck=3),
@@ -159,17 +164,15 @@ test_pipeline = [
     dict(type="Reformat"),
 ]
 
-train_anno = "demo/nuScenes/demo_infos.pkl"
-val_anno = "demo/nuScenes/demo_infos.pkl"
-test_anno = None
 
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=8,
+    samples_per_gpu=1,
+    workers_per_gpu=1,
     train=dict(
         type=dataset_type,
         root_path=data_root,
         info_path=train_anno,
+        version="v1.0-mini",
         ann_file=train_anno,
         nsweeps=nsweeps,
         class_names=class_names,
@@ -179,6 +182,7 @@ data = dict(
         type=dataset_type,
         root_path=data_root,
         info_path=val_anno,
+        version="v1.0-mini",
         test_mode=True,
         ann_file=val_anno,
         nsweeps=nsweeps,
@@ -221,7 +225,6 @@ total_epochs = 20
 device_ids = range(8)
 dist_params = dict(backend="nccl", init_method="env://")
 log_level = "INFO"
-work_dir = './work_dirs/{}/'.format(__file__[__file__.rfind('/') + 1:-3])
 load_from = None
 resume_from = None 
 workflow = [('train', 1)]
