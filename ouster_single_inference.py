@@ -144,6 +144,7 @@ if __name__ == '__main__':
 
         # Reshape and drop reflection values (nuscenes pcd.bin to o3d pcd) [x,y,z,i,r] ring is not used
         points = bin_pcd.reshape((-1, 5))#[:, 0:3] #xyz
+        points[:,4] = 0 #temporal sweep not needed since os1-128. set t  to 0
         xyz_points = points[:,0:3]
         detections = process_example(points, args.fp16)
         print(detections)
