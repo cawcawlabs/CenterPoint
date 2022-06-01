@@ -54,6 +54,7 @@ def open3d_visualize_sample(nusc: NuScenes,
     :param savepath: Path to save the summary writer to.
     """
     try:
+        import tensorflow
         import open3d.ml.tf as ml3d
         from torch.utils.tensorboard import SummaryWriter
     except Exception as e:
